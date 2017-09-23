@@ -92,77 +92,84 @@ def evaluate_model(w2v_file, syntrans_file, idf_file, score_file, model):
         
 
 if __name__ == '__main__':
-    
-    if len(sys.argv) >= 3:
-        train_case = sys.argv[1]
-        test_case = sys.argv[2]
-        use_trained = sys.argv[3] # This is a function under testing. 0 is stable
-    else:
-        train_case = "training"
-        test_case = "training" # "training" #"randomed_labeled_testing" # "develop"
-        use_trained = False  # This is a function under testing. 0 is stable
-    
-    
-    # Pre-processing
-    
-    # word_seg("develop.data", "develop.seg")
-    # word_to_syn("develop.seg", "develop.syntrans")
-    # calc_idf("develop.syntrans", "develop.idf")
-    
-    # word_seg("training.data", "training.seg")
-    # word_to_syn("training.seg", "training.syntrans")
-    # calc_idf("training.syntrans", "training.idf")
-    #
-    # word_seg("randomed_labeled_testing.data", "randomed_labeled_testing.seg")
-    # word_to_syn("randomed_labeled_testing.seg", "randomed_labeled_testing.syntrans")
-    # calc_idf("randomed_labeled_testing.syntrans", "randomed_labeled_testing.idf")
-    # gen_word_vec()
 
-    '''
+    train_case = config.ExececutionConfig.TRAIN_CASE
+    test_case = config.ExececutionConfig.TEST_CASE
+    use_trained = config.ExececutionConfig.USE_TRAINED
+    to_pre_process = config.ExececutionConfig.PREPROCESS
+    to_train = config.ExececutionConfig.TRAIN
+    to_evaluate = config.ExececutionConfig.EVALUATE
+    to_init_model = config.ExececutionConfig.INIT_MODEL
     
-    my_model = layers.DL4AQS_model().model
-    lf = config.TrainConfig.LOSS_FUNC
-    optmz = config.TrainConfig.OPTIMIZER
+    if to_pre_process: # Pre-processing
 
+        word_seg("develop.data", "develop.seg")
+        word_to_syn("develop.seg", "develop.syntrans")
+        calc_idf("develop.syntrans", "develop.idf")
 
+        word_seg("training.data", "training.seg")
+        word_to_syn("training.seg", "training.syntrans")
+        calc_idf("training.syntrans", "training.idf")
+
+        word_seg("randomed_labeled_testing.data", "randomed_labeled_testing.seg")
+        word_to_syn("randomed_labeled_testing.seg", "randomed_labeled_testing.syntrans")
+        calc_idf("randomed_labeled_testing.syntrans", "randomed_labeled_testing.idf")
+        gen_word_vec()
+
+    if to_train: # Training
     
-    print("------Creating model for training------")
+        my_model = layers.DL4AQS_model().model
+        lf = config.TrainConfig.LOSS_FUNC
+        optmz = config.TrainConfig.OPTIMIZER
 
-    my_model.compile(optimizer=optmz, loss=lf)
+        print("------Creating model for training------")
 
-    if use_trained:
+        my_model.compile(optimizer=optmz, loss=lf)
+
+        if use_trained:
+            my_model.load_weights("my_model_weights.h5")
+            #my_model.optimizer
+
+        print("------Training on %s data.------" % train_case)
+
+        train_model("training.w2v", "%s.syntrans" % train_case, "%s.idf" % train_case, my_model)
+
+        print("------Saving model------")
+
+        my_model.save_weights("my_model_weights.h5")
+
+    elif to_init_model: # Just initialize a model
+
+        my_model = layers.DL4AQS_model().model
+        lf = config.TrainConfig.LOSS_FUNC
+        optmz = config.TrainConfig.OPTIMIZER
+
+        print("------Creating model for initialization------")
+
+        my_model.compile(optimizer=optmz, loss=lf)
+
+        print("------Saving model------")
+
+        my_model.save_weights("my_model_weights.h5")
+    
+    if to_evaluate: # Evaluating
+    
+        print("------Loading model for testing------")
+
+        my_model = layers.DL4AQS_model().model
         my_model.load_weights("my_model_weights.h5")
-        #my_model.optimizer
+
+        #my_model = load_model("my_model.h5")
+
+        print("------testing on training & randomed_labeled_testing data.------")
+
+        evaluate_model("training.w2v", "training.syntrans",\
+                       "training.idf", "training.scores", my_model)
+        evaluate_model("randomed_labeled_testing.w2v", "randomed_labeled_testing.syntrans", \
+                       "randomed_labeled_testing.idf", "randomed_labeled_testing.scores", my_model)
 
 
-    
-    print("------Training on %s data.------" % train_case)
-    
-    train_model("training.w2v", "%s.syntrans" % train_case, "%s.idf" % train_case, my_model)
+        # print("------testing on %s data.------" % test_case)
 
-    
-    print("------Saving model------")
-    
-    my_model.save_weights("my_model_weights.h5")
-    
-
-    
-    print("------Loading model for testing------")
-    
-    my_model = layers.DL4AQS_model().model
-    my_model.load_weights("my_model_weights.h5")
-    
-    #my_model = load_model("my_model.h5")
-
-    print("------testing on training & randomed_labeled_testing data.------")
-
-    evaluate_model("training.w2v", "training.syntrans",\
-                   "training.idf", "training.scores", my_model)
-    evaluate_model("randomed_labeled_testing.w2v", "randomed_labeled_testing.syntrans", \
-                   "randomed_labeled_testing.idf", "randomed_labeled_testing.scores", my_model)
-
-    '''
-    # print("------testing on %s data.------" % test_case)
-    
-    # evaluate_model("training.w2v", "%s.syntrans" % test_case, "%s.idf" % test_case, "%s.scores" % test_case, my_model)
+        # evaluate_model("training.w2v", "%s.syntrans" % test_case, "%s.idf" % test_case, "%s.scores" % test_case, my_model)
     
