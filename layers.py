@@ -62,22 +62,8 @@ class DL4AQS_model(object):
                             padding="same",
                             activation="relu",
                             kernel_size=(1, conv_k_size)) # output: (batch(1), sentence_num, word_num(max)-1, dim)
-        cnv1_layer_2 = Conv2D(batch_input_shape=(1, None, None, dim),
-                                filters=dim,
-                                padding="same",
-                                activation="relu",
-                                kernel_size=(1, conv_k_size))
-        cnv1_layer_3 = Conv2D(batch_input_shape=(1, None, None, dim),
-                                filters=dim,
-                                padding="same",
-                                activation="relu",
-                                kernel_size=(1, conv_k_size))
         q_c = cnv1_layer_1(q) # expected (sequence_len-1, dim)
         a_c = cnv1_layer_1(a)
-        q_c = cnv1_layer_2(q_c) # expected (sequence_len-1, dim)
-        a_c = cnv1_layer_2(a_c)
-        q_c = cnv1_layer_3(q_c) # expected (sequence_len-1, dim)
-        a_c = cnv1_layer_3(a_c)
 
         # Pooling
         #pooling_layer = max_pool_layer(wdim=dim)

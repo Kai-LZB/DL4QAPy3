@@ -80,11 +80,11 @@ def evaluate_model(w2v_file, syntrans_file, idf_file, score_file, model):
                     #print score
                     sc_text.write(str(score))
                     sc_text.write('\n')'''
-                for i in range(len(score_sample)):
+                for i, score in enumerate(score_sample):
                     # print(score_sample[i])
                     # print(idf_sample)
-                    score = score_sample[i] + idf_weight * sum(idf_sample[i])
-                    sc_text.write(str(score))
+                    idfed_score = score + idf_weight * sum(idf_sample[i])
+                    sc_text.write(str(idfed_score))
                     sc_text.write('\n')
 
     
@@ -105,28 +105,20 @@ if __name__ == '__main__':
     
     # Pre-processing
     
-    # word_seg("debug.data", "debug.seg")
-    # word_to_syn("debug.seg", "debug.syntrans")
-    # calc_idf("debug.syntrans", "debug.idf")
-    
     # word_seg("develop.data", "develop.seg")
     # word_to_syn("develop.seg", "develop.syntrans")
     # calc_idf("develop.syntrans", "develop.idf")
     
     # word_seg("training.data", "training.seg")
-    #word_to_syn("training.seg", "training.syntrans")
+    # word_to_syn("training.seg", "training.syntrans")
     # calc_idf("training.syntrans", "training.idf")
-    
-    #word_seg("testing.data", "testing.seg")
-    #word_to_syn("testing.seg", "testing.syntrans")
-    # calc_idf("testing.syntrans", "testing.idf")
-    
-    #word_seg("randomed_labeled_testing.data", "randomed_labeled_testing.seg")
-    #word_to_syn("randomed_labeled_testing.seg", "randomed_labeled_testing.syntrans")
+    #
+    # word_seg("randomed_labeled_testing.data", "randomed_labeled_testing.seg")
+    # word_to_syn("randomed_labeled_testing.seg", "randomed_labeled_testing.syntrans")
     # calc_idf("randomed_labeled_testing.syntrans", "randomed_labeled_testing.idf")
     # gen_word_vec()
 
-
+    '''
     
     my_model = layers.DL4AQS_model().model
     lf = config.TrainConfig.LOSS_FUNC
@@ -169,7 +161,7 @@ if __name__ == '__main__':
     evaluate_model("randomed_labeled_testing.w2v", "randomed_labeled_testing.syntrans", \
                    "randomed_labeled_testing.idf", "randomed_labeled_testing.scores", my_model)
 
-
+    '''
     # print("------testing on %s data.------" % test_case)
     
     # evaluate_model("training.w2v", "%s.syntrans" % test_case, "%s.idf" % test_case, "%s.scores" % test_case, my_model)

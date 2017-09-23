@@ -58,29 +58,20 @@ def word_seg(training_file, seg_file):
     seg_text.close()
     
 def word_to_syn(seg_file, syntrans_file):
-    # Raw text dividing
+    # Adding co-occuring words
     raw_text = open(seg_file, 'r')
     syntrans_text = open(syntrans_file, 'w')
-    opp_dict = {} # Record known words' code
     for line in raw_text:
         index, q, a, score = line.split('\t') # index, q, a, match result
         score = score[0]
         # Translate sentence to synonym coding
         syn_sentence_q = [] # sentence after encoded to synonym coding  
         for word in q.split():
-            if word in opp_dict:
-                syn_sentence_q.append(opp_dict[word])
-            else:
-                opp_dict[word] = find_synonym(word)
-                syn_sentence_q.append(opp_dict[word])
+            syn_sentence_q.append(word)
         
         syn_sentence_a = []
         for word in a.split():
-            if word in opp_dict:
-                syn_sentence_a.append(opp_dict[word])
-            else:
-                opp_dict[word] = find_synonym(word)
-                syn_sentence_a.append(opp_dict[word])
+            syn_sentence_a.append(word)
                 
         syntrans_text.write(str(index))
         syntrans_text.write('\t')
@@ -93,24 +84,15 @@ def word_to_syn(seg_file, syntrans_file):
         
         # find co-occuring word
         for co_w in syn_sentence_a:
-            if co_w in syn_sentence_q:
+            found = set([]) # co-occuring word only count once
+            if co_w in syn_sentence_q and co_w not in found:
+                found.add(co_w)
                 syntrans_text.write(co_w)
                 syntrans_text.write(' ')
         syntrans_text.write('\n')
         
     syntrans_text.close()
     raw_text.close()
-                    
-def find_synonym(word):
-    syn_dict = open('Synonym_sets.txt', 'r')
-    for line in syn_dict:
-        word_code = line.split()[0][:-1] # First 'word' in line
-        for dict_word in line.split():
-            if word == dict_word:
-                syn_dict.close()
-                return word_code # Word code found
-    syn_dict.close()
-    return str(hash(word)) # Word code not found, return a hash value
 
 def calc_idf(syntrans_file, idf_file):
     syntrans_text = open(syntrans_file, 'r')
@@ -158,7 +140,7 @@ def calc_idf(syntrans_file, idf_file):
     syntrans_text.close()
 
 def gen_word_vec():
-    syntrans_text = open('training.syntrans', 'r')
+    syntrans_text = open('training.seg', 'r')
     sentences2vec = [] # corpus
     for line in syntrans_text:
         q = line.split('\t')[1].split()
@@ -269,7 +251,13 @@ def pad(x, **kwargs):
 #word_seg("testing.data", "testing.seg")
 #word_to_syn("testing.seg", "testing.syntrans")
 #calc_idf("testing.syntrans", "testing.idf")
-#gen_word_vec("testing.syntrans", "testing.w2v")
+# gen_word_vec()
+# m = load_word_vec("training.w2v")
+# print(m.wv)
+# print(m.wv['获奖'])
+# print('获奖' in m.wv)
+# print('？' in m.wv)
+# print('dfhrsehe5w4' in m.wv)
 #print load_word_vec('testing.w2v')
 #(qin, ain, idfin, yin) = gen_input("debug.w2v", "debug.syntrans", "debug.idf")
 """print (len(qin), len(ain), len(idfin), len(yin))
