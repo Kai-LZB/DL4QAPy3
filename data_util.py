@@ -246,16 +246,25 @@ def gen_input(w2v_model_file, syntrans_file, idf_file): ########################
     print("End of sample iterations.")
     
 def pad(x, **kwargs):
-    conv_k_size = config.TrainConfig.CONV_K_SIZE
-    dim = config.TrainConfig.WORD_EMBEDDING_DIM
-    for i in range(len(x)):
-        if len(x[i]) < conv_k_size:
-            x[i].extend([np.array([0.0 for j in range(dim)]) for i in range(conv_k_size - len(x[i]))])
-
+    '''
+        Expect x to be of shape (sentence_num, word_num, embed_dim)
+        Average padding for average pooling.
+        Word embedding shall be represented in numpy array form.
+    '''
     if x == []:
         return []
     else:
-        return pad_sequences(x, **kwargs)
+        dim = config.TrainConfig.WORD_EMBEDDING_DIM
+        lengths = []
+        average_embeddings = []
+        for s in x:
+            lengths.append(len(s))
+            average_embeddings.append(np.sum(s, axis=0) / len(s)) # embedding vectors' average of a sentence
+        max_len = max(lengths) # find the max length of all sentences in x
+        for i, s in enumerate(x):
+            for j in range(max_len-len(s)):
+                s.append(average_embeddings[i]) # extend s to max_len w/ average_embedding vectors
+        return x
     
 #word_seg("testing.data", "testing.seg")
 #word_to_syn("testing.seg", "testing.syntrans")

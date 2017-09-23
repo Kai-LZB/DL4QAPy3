@@ -55,6 +55,7 @@ def train_model(w2v_file, syntrans_file, idf_file, model):
     f.close()
     
 def evaluate_model(w2v_file, syntrans_file, idf_file, score_file, model):
+    idf_weight = config.EvaluationConfig.IDF_WEIGHT
     g = gen_input(w2v_file, syntrans_file, idf_file)
     sc_text = open(score_file, 'w')
     cnt = 0
@@ -75,10 +76,17 @@ def evaluate_model(w2v_file, syntrans_file, idf_file, score_file, model):
                 sc_text.write('\n')
         else:
             for score_sample in score_all:
-                for score in score_sample:
+                '''for score in score_sample:
                     #print score
                     sc_text.write(str(score))
+                    sc_text.write('\n')'''
+                for i in range(len(score_sample)):
+                    # print(score_sample[i])
+                    # print(idf_sample)
+                    score = score_sample[i] + idf_weight * sum(idf_sample[i])
+                    sc_text.write(str(score))
                     sc_text.write('\n')
+
     
     sc_text.close()
         
