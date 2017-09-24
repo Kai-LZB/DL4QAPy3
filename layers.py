@@ -52,18 +52,24 @@ class DL4AQS_model(object):
     def __init__(self):
         dim = config.TrainConfig.WORD_EMBEDDING_DIM
         idf_num = config.TrainConfig.IDF_NUM
-        conv_k_size = config.TrainConfig.CONV_K_SIZE
+        conv_k_size_l1 = config.TrainConfig.CONV_K_SIZE_L1
         q = Input(batch_shape=(1, None, None, dim)) # expected (batch(1), sentence_num, word_num(max), dim)
         a = Input(batch_shape=(1, None, None, dim))
         idf = Input(batch_shape=(1, None, idf_num))
         # Convolution
-        cnv1_layer_1 = Conv2D(batch_input_shape=(1, None, None, dim),
+        cnv1_layer_1q = Conv2D(batch_input_shape=(1, None, None, dim),
                             filters=dim,
                             padding="same",
                             activation="relu",
-                            kernel_size=(1, conv_k_size)) # output: (batch(1), sentence_num, word_num(max)-1, dim)
-        q_c = cnv1_layer_1(q) # expected (sequence_len-1, dim)
-        a_c = cnv1_layer_1(a)
+                            kernel_size=(1, conv_k_size_l1)) # output: (batch(1), sentence_num, word_num(max)-1, dim)
+        cnv1_layer_1a = Conv2D(batch_input_shape=(1, None, None, dim),
+                              filters=dim,
+                              padding="same",
+                              activation="relu",
+                              kernel_size=(1, conv_k_size_l1))
+
+        q_c = cnv1_layer_1q(q) # expected (sequence_len-1, dim)
+        a_c = cnv1_layer_1a(a)
 
         # Pooling
         #pooling_layer = max_pool_layer(wdim=dim)
@@ -204,14 +210,18 @@ class idf_score_layer(Layer):
                                     shape=(self.output_dim, 1),
                                     initializer='uniform',
                                     trainable=True)"""
+        self.kernel = self.add_weight(name='kernel',
+                                      shape=(1,),
+                                      initializer='uniform',
+                                      trainable=True)
         super(idf_score_layer, self).build(input_shape)
     def call(self, X): # input : [(1, sen_num), (1, sen_num, idf_num) ]
         ori_score = X[0]
         idf_score = X[1]
         idf_sum = K.sum(idf_score, axis=2) / self.idf_dim
         #ret = ori_score + self.kernel * idf_sum
-        ret = ori_score + idf_sum
-        return ori_score
+        ret = ori_score + self.kernel * idf_sum
+        return ret
     
     def compute_output_shape(self, input_shape):
         return (input_shape[0][0], input_shape[0][1])# self.output_dim) (1, sentence_num)

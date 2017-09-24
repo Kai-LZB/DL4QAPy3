@@ -83,8 +83,8 @@ def evaluate_model(w2v_file, syntrans_file, idf_file, score_file, model):
                 for i, score in enumerate(score_sample):
                     # print(score_sample[i])
                     # print(idf_sample)
-                    idfed_score = score + idf_weight * sum(idf_sample[i])
-                    sc_text.write(str(idfed_score))
+                    # idfed_score = score + idf_weight * sum(idf_sample[i])
+                    sc_text.write(str(score))
                     sc_text.write('\n')
 
     
@@ -161,15 +161,18 @@ if __name__ == '__main__':
 
         #my_model = load_model("my_model.h5")
 
-        print("------testing on training & randomed_labeled_testing data.------")
+        if test_case == "both":
 
-        evaluate_model("training.w2v", "training.syntrans",\
-                       "training.idf", "training.scores", my_model)
-        evaluate_model("randomed_labeled_testing.w2v", "randomed_labeled_testing.syntrans", \
-                       "randomed_labeled_testing.idf", "randomed_labeled_testing.scores", my_model)
+            print("------testing on training & randomed_labeled_testing data.------")
 
+            evaluate_model("training.w2v", "training.syntrans",\
+                           "training.idf", "training.scores", my_model)
+            evaluate_model("randomed_labeled_testing.w2v", "randomed_labeled_testing.syntrans", \
+                           "randomed_labeled_testing.idf", "randomed_labeled_testing.scores", my_model)
 
-        # print("------testing on %s data.------" % test_case)
+        else:
 
-        # evaluate_model("training.w2v", "%s.syntrans" % test_case, "%s.idf" % test_case, "%s.scores" % test_case, my_model)
+            print("------testing on %s data.------" % test_case)
+
+            evaluate_model("training.w2v", "%s.syntrans" % test_case, "%s.idf" % test_case, "%s.scores" % test_case, my_model)
     
